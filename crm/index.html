@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="mk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KupiProdadi CRM</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f5f5;--card:#fff;--border:#e5e5e5;--border2:#ebebeb;
+  --text:#1a1a1a;--text2:#666;--text3:#aaa;
+  --orange:#D85A30;--orange-light:#D85A3015;--orange-dark:#993C1D;
+  --green:#3B6D11;--green-light:#3B6D1115;
+  --blue:#185FA5;--blue-light:#185FA515;
+  --radius:10px;--radius-sm:6px;
+  --shadow:0 1px 4px rgba(0,0,0,0.06);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+.app{max-width:960px;margin:0 auto;padding:1rem}
+
+/* HEADER */
+.header{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;box-shadow:var(--shadow)}
+.logo{font-size:18px;font-weight:700;letter-spacing:-0.3px}
+.logo span{color:var(--orange)}
+.sync-row{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);margin-top:3px}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot.ok{background:var(--green)}.dot.loading{background:#f0a500}.dot.err{background:#e24b4a}
+.profile-bar{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.pbtn{padding:4px 13px;border-radius:20px;border:1px solid var(--border);background:var(--bg);font-size:12px;cursor:pointer;color:var(--text2);transition:all 0.15s;font-family:inherit}
+.pbtn:hover{border-color:var(--orange);color:var(--orange)}
+.pbtn.active{background:var(--orange);border-color:var(--orange);color:#fff}
+
+/* TABS */
+.tabs{display:flex;gap:2px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:4px;margin-bottom:1rem;box-shadow:var(--shadow)}
+.tab{flex:1;padding:8px 4px;text-align:center;border-radius:7px;cursor:pointer;font-size:13px;color:var(--text2);border:none;background:transparent;transition:all 0.15s;font-family:inherit;font-weight:500}
+.tab:hover{color:var(--text)}
+.tab.active{background:var(--orange);color:#fff;box-shadow:0 1px 4px rgba(216,90,48,0.3)}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;margin-bottom:1rem;box-shadow:var(--shadow)}
+.card-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:1rem}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;text-align:center;box-shadow:var(--shadow)}
+.stat-num{font-size:28px;font-weight:700;line-height:1}
+.stat-lbl{font-size:11px;color:var(--text2);margin-top:5px}
+.stat.or .stat-num{color:var(--orange)}
+.stat.gr .stat-num{color:var(--green)}
+.stat.bl .stat-num{color:var(--blue)}
+.stat.consent{border-color:#3B6D1133}
+.stat.consent .stat-num{color:var(--green)}
+
+/* INPUTS */
+input,select,textarea{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;margin-bottom:8px;transition:border 0.15s}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--orange);background:#fff}
+textarea{resize:vertical}
+
+/* BUTTONS */
+.btn{padding:8px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-size:13px;font-family:inherit;transition:all 0.15s;font-weight:500}
+.btn:hover{background:var(--border)}
+.btn.primary{background:var(--orange);border-color:var(--orange);color:#fff}
+.btn.primary:hover{background:var(--orange-dark)}
+.btn.green{background:var(--green);border-color:var(--green);color:#fff}
+.btn.green:hover{background:#2a5009}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn.danger{color:#e24b4a;border-color:#e24b4a55}
+.btn.danger:hover{background:#fff0f0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600}
+.badge.new{background:var(--bg);color:var(--text2);border:1px solid var(--border)}
+.badge.sent{background:var(--blue-light);color:var(--blue)}
+.badge.accepted{background:var(--green-light);color:var(--green)}
+.badge.ready{background:var(--orange-light);color:var(--orange)}
+.badge.published{background:var(--green-light);color:var(--green)}
+.badge.consent{background:var(--green-light);color:var(--green);border:1px solid #3B6D1133}
+.badge.warn{background:#FFF8E1;color:#9b6f00}
+
+/* MSG BOX */
+.msg-box{background:var(--bg);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;line-height:1.65;border-left:3px solid var(--orange);margin:8px 0;color:var(--text)}
+
+/* CONTACT ITEM */
+.ci{padding:14px 0;border-bottom:1px solid var(--border2)}
+.ci:last-child{border-bottom:none}
+.avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);width:100%;max-width:640px;max-height:92vh;overflow-y:auto;padding:1.5rem;box-shadow:0 8px 40px rgba(0,0,0,0.15)}
+.modal-hd{font-size:16px;font-weight:700;margin-bottom:1.25rem;display:flex;justify-content:space-between;align-items:center}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+/* CONSENT ZONE */
+.consent-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:1.5rem;text-align:center;cursor:pointer;transition:all 0.15s;margin-bottom:12px;background:var(--bg)}
+.consent-zone:hover,.consent-zone.drag{border-color:var(--green);background:var(--green-light)}
+.consent-zone.has-img{border-color:var(--green);border-style:solid;background:var(--green-light)}
+.proof-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--green-light);border:1px solid #3B6D1133;border-radius:var(--radius-sm);color:var(--green);font-size:13px;font-weight:600}
+
+/* TAG */
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;background:var(--bg);color:var(--text2);border:1px solid var(--border);margin-right:4px}
+
+/* MISC */
+.empty{text-align:center;padding:2.5rem;color:var(--text3);font-size:14px}
+.loading-center{text-align:center;padding:3rem}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.section-box{background:var(--green-light);border:1px solid #3B6D1133;border-radius:var(--radius);padding:1rem;margin-bottom:14px}
+.btn-copied{background:var(--green)!important;border-color:var(--green)!important;color:#fff!important}
+.ad-item{padding:14px 0;border-bottom:1px solid var(--border2)}
+.ad-item:last-child{border-bottom:none}
+.info-box{background:var(--bg);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:10px}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div id="loadWrap" class="loading-center">
+    <div class="spinner"></div>
+    <div style="color:var(--text2);font-size:14px">Поврзување со заедничката база...</div>
+  </div>
+
+  <div id="ui" style="display:none">
+
+    <div class="header">
+      <div>
+        <div class="logo">Kupi<span>Prodadi</span> <span style="font-size:13px;font-weight:500;color:var(--text2)">CRM</span></div>
+        <div class="sync-row"><span class="dot ok" id="syncDot"></span><span id="syncTxt">Синхронизирано</span></div>
+        <div class="profile-bar" id="profileBar"></div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:13px;font-weight:600" id="todayDate"></div>
+        <button class="btn sm" onclick="syncNow()" style="margin-top:6px">↻ Освежи</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('dash')">📊 Преглед</button>
+      <button class="tab" onclick="showTab('contacts')">👥 Контакти</button>
+      <button class="tab" onclick="showTab('ads')">📋 Огласи <span id="adsBadge" style="background:rgba(255,255,255,0.3);border-radius:10px;padding:1px 6px;font-size:11px;display:none"></span></button>
+      <button class="tab" onclick="showTab('settings')">⚙️ Поставки</button>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="tab-dash">
+      <div class="stats-grid">
+        <div class="stat or"><div class="stat-num" id="s-tot">0</div><div class="stat-lbl">Контактирани</div></div>
+        <div class="stat gr"><div class="stat-num" id="s-yes">0</div><div class="stat-lbl">Прифатиле ДА</div></div>
+        <div class="stat consent"><div class="stat-num" id="s-cons">0</div><div class="stat-lbl">Со согласност ✓</div></div>
+        <div class="stat bl"><div class="stat-num" id="s-pub">0</div><div class="stat-lbl">Објавени</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Брзи акции</div>
+        <div class="row">
+          <button class="btn primary" onclick="showTab('contacts');setTimeout(()=>{document.getElementById('addForm').style.display='block';renderGrpSel()},100)">+ Нов контакт</button>
+          <button class="btn" onclick="showTab('ads')">Огласи за KupiProdadi</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Активност по вработен</div>
+        <div id="empStats"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Последни активности</div>
+        <div id="recentAct"></div>
+      </div>
+    </div>
+
+    <!-- CONTACTS -->
+    <div id="tab-contacts" style="display:none">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div class="card-title" style="margin:0">Контакти</div>
+          <button class="btn primary sm" onclick="toggleAddForm()">+ Нов контакт</button>
+        </div>
+        <div id="addForm" style="display:none;background:var(--bg);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px;border:1px solid var(--border)">
+          <input id="cName" placeholder="Ime na prodavacot" />
+          <input id="cProd" placeholder="Proizvod / naslov na oglas" />
+          <input id="cLink" placeholder="Link na FB oglas (opcionalno)" />
+          <select id="cGrp"><option value="">— Izberi FB grupata —</option></select>
+          <div class="row">
+            <button class="btn primary" onclick="addContact()">Зачувај контакт</button>
+            <button class="btn" onclick="toggleAddForm()">Откажи</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+          <select id="fSt" onchange="renderContacts()" style="width:auto;margin:0;font-size:13px">
+            <option value="">Сите статуси</option>
+            <option value="new">Нови</option>
+            <option value="sent">Пратена порака</option>
+            <option value="accepted">Прифатиле ДА</option>
+          </select>
+          <select id="fEmp" onchange="renderContacts()" style="width:auto;margin:0;font-size:13px">
+            <option value="">Сите вработени</option>
+          </select>
+        </div>
+        <div id="contactsList"></div>
+      </div>
+    </div>
+
+    <!-- ADS -->
+    <div id="tab-ads" style="display:none">
+      <div class="stats-grid">
+        <div class="stat gr"><div class="stat-num" id="ad-tot">0</div><div class="stat-lbl">Вкупно одобрени</div></div>
+        <div class="stat consent"><div class="stat-num" id="ad-cons">0</div><div class="stat-lbl">Со согласност</div></div>
+        <div class="stat or"><div class="stat-num" id="ad-rdy">0</div><div class="stat-lbl">Спремни за KP</div></div>
+        <div class="stat bl"><div class="stat-num" id="ad-pub">0</div><div class="stat-lbl">Објавени</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Огласи на продавачи</div>
+        <div id="adsList"></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="tab-settings" style="display:none">
+      <div class="card">
+        <div class="card-title">Профили на вработени</div>
+        <div id="empList"></div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border2)">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px">Додај вработен</div>
+          <input id="nEN" placeholder="Ime (pr. Jasmina)" />
+          <input id="nEFB" placeholder="FB profil (pr. Jasmina Kostadinova)" />
+          <button class="btn primary sm" onclick="addEmp()">Додај</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">FB Групи за контактирање</div>
+        <div id="grpList"></div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border2)">
+          <input id="nGrp" placeholder="Ime na FB grupata" />
+          <button class="btn primary sm" onclick="addGrp()">Додај група</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Шаблони за пораки <span style="font-weight:400;color:var(--text3)">(користи {ime})</span></div>
+        <div id="tplList"></div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border2)">
+          <textarea id="nTpl" placeholder="Здраво, јас сум {ime} од КупиПродади..." style="min-height:80px"></textarea>
+          <button class="btn primary sm" onclick="addTpl()">Додај шаблон</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: Оглас + Согласност -->
+<div id="adModal" class="modal-bg" style="display:none">
+  <div class="modal">
+    <div class="modal-hd">
+      Внеси оглас + Доказ за согласност
+      <button class="btn sm" onclick="closeModal()">✕ Затвори</button>
+    </div>
+
+    <div class="section-box">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <span style="font-size:22px">🛡️</span>
+        <div>
+          <div style="font-size:14px;font-weight:700">Доказ за согласност</div>
+          <div style="font-size:12px;color:var(--text2)">Скриншот од Messenger каде продавачот одговорил со ДА</div>
+        </div>
+      </div>
+      <div id="cZone" class="consent-zone" onclick="document.getElementById('cFile').click()">
+        <div id="cPH">
+          <div style="font-size:28px;margin-bottom:8px">📸</div>
+          <div style="font-weight:600;margin-bottom:4px">Прикачи скриншот</div>
+          <div style="font-size:12px;color:var(--text3)">Клик или повлечи слика тука</div>
+        </div>
+        <img id="cPreview" style="display:none;max-width:100%;max-height:180px;border-radius:var(--radius-sm);margin:0 auto">
+      </div>
+      <input type="file" id="cFile" accept="image/*" style="display:none" onchange="handleConsent(event)">
+      <div id="cStatus" style="display:none;align-items:center;gap:8px;margin-bottom:10px">
+        <div class="proof-badge">✓ Доказот е прикачен</div>
+        <button class="btn sm danger" onclick="clearConsent()">Отстрани</button>
+      </div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid #3B6D1122">
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px">Или само белешка за согласноста</div>
+        <div class="two-col">
+          <input id="cDate" type="date" style="margin-bottom:0"/>
+          <input id="cNote" placeholder="pr. Odgovoril DA vo Messenger" style="margin-bottom:0"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-title" style="margin-bottom:10px">Детали на огласот</div>
+    <input id="aName" placeholder="Ime na prodavacot" />
+    <input id="aPhone" placeholder="Telefon / kontakt" />
+    <input id="aLink" placeholder="Link do FB oglas" />
+    <div class="two-col">
+      <input id="aCity" placeholder="Grad" />
+      <input id="aPrice" placeholder="Cena (pr. 1500 den)" />
+    </div>
+    <input id="aTitle" placeholder="Naslov na oglas" />
+    <textarea id="aDesc" placeholder="Opis — kopiraj od FB post..." style="min-height:100px"></textarea>
+
+    <div class="card-title" style="margin-bottom:6px">Слики (URL-ови)</div>
+    <div class="info-box">Десен клик на слика во FB → "Копирај адреса на слика" → залепи тука</div>
+    <div id="imgInputs">
+      <input class="iurl" placeholder="URL na slika 1" style="margin-bottom:4px"/>
+      <input class="iurl" placeholder="URL na slika 2" style="margin-bottom:4px"/>
+    </div>
+    <button class="btn sm" onclick="addImgInput()" style="margin-bottom:14px">+ Додај слика</button>
+
+    <select id="aCat" style="margin-bottom:14px">
+      <option value="">— Категорија —</option>
+      <option>Електроника</option><option>Мобилни телефони</option>
+      <option>Облека и мода</option><option>Мебел и дом</option>
+      <option>Возила</option><option>Спорт</option>
+      <option>Деца и бебиња</option><option>Книги</option><option>Друго</option>
+    </select>
+
+    <div class="card-title" style="margin-bottom:8px">Преглед на оглас</div>
+    <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px">
+      <div id="pImg" style="height:120px;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:13px">Нема слика</div>
+      <div style="padding:12px">
+        <div style="font-size:15px;font-weight:700" id="pTitle">Наслов</div>
+        <div style="font-size:20px;font-weight:700;color:var(--orange);margin:4px 0" id="pPrice">—</div>
+        <div style="font-size:13px;color:var(--text2)" id="pDesc"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:12px;margin-top:8px">
+          <span id="pCity" style="color:var(--text2)"></span>
+          <span id="pPhone" style="color:var(--blue)"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <button class="btn primary" onclick="saveAd(false)">Зачувај оглас</button>
+      <button class="btn green" onclick="saveAd(true)">Зачувај + Означи Објавен</button>
+      <button class="btn" onclick="closeModal()">Откажи</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== STORAGE FALLBACK =====
+// Vercel ја отвара оваа CRM страна како обичен HTML, па window.storage не постои
+// освен ако не е вбризган од некоја надворешна околина. Овој fallback го држи CRM-от
+// функционален преку localStorage наместо да паѓа на "Грешка при синхронизација".
+if (!window.storage) {
+  window.storage = {
+    async get(key) {
+      const value = localStorage.getItem(key);
+      return value === null ? null : { value };
+    },
+    async set(key, value) {
+      localStorage.setItem(key, value);
+      return { value };
+    }
+  };
+}
+
+// ===== STATE =====
+const SHARED = true;
+const SK = { set:'kp5_set', con:'kp5_contacts', ads:'kp5_ads', prof:'kp5_prof' };
+const COLORS = ['#D85A30','#185FA5','#3B6D11','#533089','#993556','#854F0B'];
+const DEF = {
+  employees:[
+    {name:'Јасмина',fb:'Jasmina Kostadinova'},
+    {name:'Марија',fb:'Marija Ivanova'},
+    {name:'Елена',fb:'Elena Petrovska'},
+    {name:'Сара',fb:'Sara Dimitrieva'},
+    {name:'Ана',fb:'Ana Nikoloska'},
+    {name:'Ивана',fb:'Ivana Blagoevska'}
+  ],
+  groups:['Продавам - Скопје','Купи Продај МК','Огласи Македонија','Продавам - Битола','Купи Продај Тетово'],
+  templates:[
+    'Здраво, јас сум {ime} вработена во КупиПродади. Сакав да ви понудам бесплатно рекламирање за производот кој веќе сте го постирале. Тоа ќе биде целосно бесплатно на нашата платформа. Доколку ни дозволите, ние ќе го реобјавиме вашиот оглас кај нас. Доволно е да одговорите со ДА 😊',
+    'Поздрав! Јас сум {ime} од тимот на КупиПродади. Забележав дека продавате — сакав да ви помогнам да го продадете побрзо! Нудиме бесплатно реобјавување на вашиот оглас. Само одговорете со ДА! 🙌',
+    'Здраво! Јас сум {ime}, работам за КупиПродади. Имаме можност да го поставиме вашиот оглас и кај нас бесплатно, за повеќе купувачи! Интересира ли ве? Одговорете со ДА 👍',
+    'Здраво, {ime} сум од КупиПродади! Сакаме да го вклучиме и вашиот производ — целосно бесплатно. Само кажете ДА и ние го средуваме! ✨'
+  ]
+};
+
+let S = {...DEF}, contacts = [], ads = [], activeP = 0, curCId = null, cImg = null;
+
+// ===== SYNC =====
+function setSt(s,m){ const d=document.getElementById('syncDot'),t=document.getElementById('syncTxt'); if(!d)return; d.className='dot '+s; t.textContent=m; }
+
+async function loadAll(){
+  setSt('loading','Синхронизирање...');
+  try{
+    const [sr,cr,ar,pr] = await Promise.all([
+      window.storage.get(SK.set,SHARED).catch(()=>null),
+      window.storage.get(SK.con,SHARED).catch(()=>null),
+      window.storage.get(SK.ads,SHARED).catch(()=>null),
+      window.storage.get(SK.prof,false).catch(()=>null)
+    ]);
+    if(sr) S=JSON.parse(sr.value);
+    if(cr) contacts=JSON.parse(cr.value);
+    if(ar) ads=JSON.parse(ar.value);
+    if(pr) activeP=parseInt(pr.value)||0;
+    setSt('ok','Синхронизирано · '+new Date().toLocaleTimeString('mk-MK',{hour:'2-digit',minute:'2-digit'}));
+  }catch(e){ setSt('err','Грешка при синхронизација'); }
+}
+async function saveSet(){ try{await window.storage.set(SK.set,JSON.stringify(S),SHARED);}catch(e){} }
+async function saveCon(){ setSt('loading','Зачувување...'); try{await window.storage.set(SK.con,JSON.stringify(contacts),SHARED);setSt('ok','Зачувано');}catch(e){setSt('err','Грешка');} }
+async function saveAds(){ try{await window.storage.set(SK.ads,JSON.stringify(ads),SHARED);}catch(e){} }
+async function saveProf(){ try{await window.storage.set(SK.prof,String(activeP),false);}catch(e){} }
+async function syncNow(){ await loadAll(); renderAll(); }
+
+// ===== HELPERS =====
+function ini(n){ return n.split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2); }
+function rndTpl(ei){ const e=S.employees[ei]||S.employees[0]; const t=S.templates[Math.floor(Math.random()*S.templates.length)]; return t.replace(/\{ime\}/g,e.name); }
+function col(i){ return COLORS[i]||'#888'; }
+
+// ===== PROFILES =====
+function renderProfiles(){
+  document.getElementById('profileBar').innerHTML = S.employees.map((e,i)=>
+    `<button class="pbtn ${i===activeP?'active':''}" onclick="setPro(${i})">${e.name}</button>`).join('');
+  const fe=document.getElementById('fEmp');
+  if(fe) fe.innerHTML='<option value="">Сите вработени</option>'+S.employees.map((e,i)=>`<option value="${i}">${e.name}</option>`).join('');
+}
+async function setPro(i){ activeP=i; await saveProf(); renderProfiles(); }
+
+// ===== TABS =====
+function showTab(n){
+  ['dash','contacts','ads','settings'].forEach(t=>{ document.getElementById('tab-'+t).style.display=t===n?'block':'none'; });
+  document.querySelectorAll('.tab').forEach((b,i)=>{ b.classList.toggle('active',['dash','contacts','ads','settings'][i]===n); });
+  if(n==='dash') renderDash();
+  if(n==='contacts') renderContacts();
+  if(n==='ads') renderAds();
+  if(n==='settings') renderSettings();
+}
+
+// ===== CONTACTS =====
+function renderGrpSel(){
+  const s=document.getElementById('cGrp');
+  s.innerHTML='<option value="">— Избери FB групата —</option>'+S.groups.map(g=>`<option value="${g}">${g}</option>`).join('');
+}
+function toggleAddForm(){ const f=document.getElementById('addForm'); const show=f.style.display==='none'; f.style.display=show?'block':'none'; if(show) renderGrpSel(); }
+
+async function addContact(){
+  const name=document.getElementById('cName').value.trim();
+  const prod=document.getElementById('cProd').value.trim();
+  const link=document.getElementById('cLink').value.trim();
+  const grp=document.getElementById('cGrp').value;
+  if(!name||!prod){ alert('Внесете ime и proizvod!'); return; }
+  const c={id:Date.now(),name,product:prod,link,group:grp,employee:activeP,
+    status:'new',message:rndTpl(activeP),createdAt:new Date().toISOString(),sentAt:null};
+  contacts.unshift(c); await saveCon();
+  ['cName','cProd','cLink'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('addForm').style.display='none';
+  renderContacts();
+}
+
+function renderContacts(){
+  const fs=document.getElementById('fSt')?.value||'';
+  const fe=document.getElementById('fEmp')?.value;
+  let list=[...contacts];
+  if(fs) list=list.filter(c=>c.status===fs);
+  if(fe!==undefined&&fe!=='') list=list.filter(c=>c.employee===parseInt(fe));
+  const el=document.getElementById('contactsList');
+  if(!list.length){ el.innerHTML='<div class="empty">Нема контакти.<br>Додај нов контакт со копчето горе.</div>'; return; }
+  const sl={new:'Нов',sent:'Пратена',accepted:'Прифатил ДА'};
+  el.innerHTML=list.map(c=>{
+    const emp=S.employees[c.employee]||{name:'?'};
+    const c_col=col(c.employee);
+    const ad=ads.find(a=>a.cId===c.id);
+    const hasCons=ad&&(ad.cImg||ad.cNote);
+    return `<div class="ci">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div class="avatar" style="background:${c_col}20;color:${c_col}">${ini(c.name)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-bottom:3px">
+            <span style="font-weight:600">${c.name}</span>
+            <span class="badge ${c.status}">${sl[c.status]||c.status}</span>
+            ${hasCons?'<span class="badge consent">🛡️ Согласност</span>':''}
+            ${ad&&ad.published?'<span class="badge published">Објавен</span>':''}
+          </div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:4px">${c.product}${c.group?' · '+c.group:''}</div>
+          <div class="msg-box">${c.message}</div>
+          <div class="row" style="margin-top:8px">
+            <button id="cb-${c.id}" class="btn primary sm" onclick="copyMsg(${c.id})">Копирај порака</button>
+            <button class="btn sm" onclick="refreshMsg(${c.id})">Нова порака</button>
+            ${c.status!=='accepted'?`<button class="btn green sm" onclick="markYes(${c.id})">✓ Рекол ДА</button>`:''}
+            ${c.status==='accepted'?`<button class="btn sm" style="border-color:var(--orange);color:var(--orange)" onclick="openModal(${c.id})">${ad?'Уреди оглас':'+ Внеси оглас'}</button>`:''}
+            <button class="btn sm danger" onclick="delC(${c.id})">✕</button>
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:8px">
+            <span class="tag">${emp.name}</span>
+            ${c.link?`<a href="${c.link}" target="_blank">FB оглас</a>`:''}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function copyMsg(id){
+  const c=contacts.find(x=>x.id===id); if(!c)return;
+  try{ await navigator.clipboard.writeText(c.message); }catch(e){}
+  if(c.status==='new'){ c.status='sent'; c.sentAt=new Date().toISOString(); await saveCon(); }
+  const btn=document.getElementById('cb-'+id);
+  if(btn){ btn.textContent='✓ Копирано!'; btn.classList.add('btn-copied');
+    setTimeout(()=>{ btn.textContent='Копирај порака'; btn.classList.remove('btn-copied'); renderContacts(); },1800); }
+}
+async function refreshMsg(id){
+  const c=contacts.find(x=>x.id===id); if(!c)return;
+  c.message=rndTpl(c.employee); await saveCon(); renderContacts();
+}
+async function markYes(id){
+  const c=contacts.find(x=>x.id===id); if(!c)return;
+  c.status='accepted'; await saveCon(); renderContacts();
+  if(confirm(`✅ ${c.name} прифатил!\n\nСакаш веднаш да го внесеш огласот со доказот?`)) openModal(id);
+}
+async function delC(id){ if(!confirm('Бришење на контактот?'))return; contacts=contacts.filter(x=>x.id!==id); await saveCon(); renderContacts(); }
+
+// ===== MODAL =====
+function openModal(cId){
+  curCId=cId; cImg=null;
+  const c=contacts.find(x=>x.id===cId);
+  const ex=ads.find(a=>a.cId===cId);
+  const fields={aName:'sellerName',aPhone:'phone',aLink:'link',aCity:'city',aPrice:'price',aTitle:'title',aDesc:'desc',aCat:'category',cDate:'cDate',cNote:'cNote'};
+  const defaults={aName:c?.name,aLink:c?.link,aTitle:c?.product,cDate:new Date().toISOString().split('T')[0],cNote:'Одговорил ДА во Messenger'};
+  Object.entries(fields).forEach(([id,key])=>{
+    const el=document.getElementById(id);
+    if(el) el.value = ex?.[key]||defaults[id]||'';
+  });
+  document.getElementById('cStatus').style.display='none';
+  document.getElementById('cPH').style.display='block';
+  const cp=document.getElementById('cPreview'); cp.style.display='none';
+  const cz=document.getElementById('cZone'); cz.classList.remove('has-img');
+  if(ex?.cImg){ cImg=ex.cImg; cp.src=cImg; cp.style.display='block'; document.getElementById('cPH').style.display='none'; document.getElementById('cStatus').style.display='flex'; cz.classList.add('has-img'); }
+  document.querySelectorAll('.iurl').forEach((inp,i)=>{ inp.value=ex?.images?.[i]||''; });
+  updatePreview();
+  document.getElementById('adModal').style.display='flex';
+}
+function closeModal(){ document.getElementById('adModal').style.display='none'; curCId=null; }
+
+function handleConsent(e){
+  const file=e.target.files[0]; if(!file)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    cImg=ev.target.result;
+    const cp=document.getElementById('cPreview'); cp.src=cImg; cp.style.display='block';
+    document.getElementById('cPH').style.display='none';
+    document.getElementById('cStatus').style.display='flex';
+    document.getElementById('cZone').classList.add('has-img');
+  };
+  r.readAsDataURL(file);
+}
+function clearConsent(){
+  cImg=null;
+  document.getElementById('cPreview').style.display='none';
+  document.getElementById('cPH').style.display='block';
+  document.getElementById('cStatus').style.display='none';
+  document.getElementById('cZone').classList.remove('has-img');
+  document.getElementById('cFile').value='';
+}
+
+// Drag & drop on consent zone
+const cz=document.getElementById('cZone');
+cz.addEventListener('dragover',e=>{e.preventDefault();cz.classList.add('drag');});
+cz.addEventListener('dragleave',()=>cz.classList.remove('drag'));
+cz.addEventListener('drop',e=>{
+  e.preventDefault(); cz.classList.remove('drag');
+  const file=e.dataTransfer.files[0]; if(!file||!file.type.startsWith('image/'))return;
+  handleConsent({target:{files:[file]}});
+});
+
+function addImgInput(){
+  const d=document.getElementById('imgInputs');
+  const inp=document.createElement('input'); inp.className='iurl'; inp.placeholder='URL na slika'; inp.style.marginBottom='4px';
+  inp.addEventListener('input',updatePreview); d.appendChild(inp);
+}
+
+function updatePreview(){
+  const v=id=>document.getElementById(id)?.value||'';
+  document.getElementById('pTitle').textContent=v('aTitle')||'Наслов';
+  document.getElementById('pPrice').textContent=v('aPrice')||'—';
+  document.getElementById('pDesc').textContent=(v('aDesc')).slice(0,150);
+  document.getElementById('pCity').textContent=v('aCity')?'📍 '+v('aCity'):'';
+  document.getElementById('pPhone').textContent=v('aPhone')?'📞 '+v('aPhone'):'';
+  const imgs=Array.from(document.querySelectorAll('.iurl')).map(i=>i.value).filter(Boolean);
+  const pb=document.getElementById('pImg');
+  if(imgs[0]) pb.innerHTML=`<img src="${imgs[0]}" style="width:100%;height:120px;object-fit:cover;display:block" onerror="this.parentElement.textContent='Сликата не се вчита'">`;
+  else pb.textContent='Нема слика';
+}
+document.addEventListener('input',e=>{
+  if(['aTitle','aPrice','aDesc','aCity','aPhone'].includes(e.target.id)||e.target.classList.contains('iurl')) updatePreview();
+});
+
+async function saveAd(pub=false){
+  if(!curCId)return;
+  const v=id=>document.getElementById(id)?.value.trim()||'';
+  const imgs=Array.from(document.querySelectorAll('.iurl')).map(i=>i.value.trim()).filter(Boolean);
+  const ad={id:Date.now(),cId:curCId,sellerName:v('aName'),phone:v('aPhone'),link:v('aLink'),
+    city:v('aCity'),price:v('aPrice'),title:v('aTitle'),desc:v('aDesc'),category:v('aCat'),
+    images:imgs,cImg:cImg||null,cDate:v('cDate'),cNote:v('cNote'),
+    employee:activeP,createdAt:new Date().toISOString(),published:pub};
+  const idx=ads.findIndex(a=>a.cId===curCId);
+  if(idx>=0) ads[idx]={...ad,id:ads[idx].id}; else ads.unshift(ad);
+  await saveAds(); closeModal(); updateBadge();
+  renderContacts(); renderAds();
+  alert(pub?'✅ Зачувано и означено како Објавено!':'✅ Зачувано! Оди во Огласи за да го објавиш.');
+}
+
+// ===== ADS =====
+function updateBadge(){
+  const p=ads.filter(a=>!a.published).length;
+  const b=document.getElementById('adsBadge');
+  b.style.display=p>0?'inline':'none'; b.textContent=p;
+}
+
+function renderAds(){
+  const tot=ads.length,cons=ads.filter(a=>a.cImg||a.cNote).length,pub=ads.filter(a=>a.published).length;
+  document.getElementById('ad-tot').textContent=tot;
+  document.getElementById('ad-cons').textContent=cons;
+  document.getElementById('ad-rdy').textContent=tot-pub;
+  document.getElementById('ad-pub').textContent=pub;
+  const el=document.getElementById('adsList');
+  if(!tot){ el.innerHTML='<div class="empty">Нема огласи уште.<br>Кога продавач ќе рече ДА → внеси го неговиот оглас.</div>'; return; }
+  el.innerHTML=ads.map(ad=>{
+    const emp=S.employees[ad.employee]||{name:'?'};
+    const hasCons=ad.cImg||ad.cNote;
+    return `<div class="ad-item">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        ${ad.images?.[0]?`<img src="${ad.images[0]}" style="width:64px;height:64px;object-fit:cover;border-radius:var(--radius-sm);flex-shrink:0;border:1px solid var(--border)" onerror="this.style.display='none'">`:`<div style="width:64px;height:64px;background:var(--bg);border-radius:var(--radius-sm);flex-shrink:0;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px">🏷️</div>`}
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-bottom:4px">
+            <span style="font-weight:600">${ad.title||ad.sellerName}</span>
+            <span class="badge ${ad.published?'published':'ready'}">${ad.published?'Објавен':'Спремен'}</span>
+            ${hasCons?'<span class="badge consent">🛡️ Согласност</span>':'<span class="badge warn">⚠ Без доказ</span>'}
+            ${ad.category?`<span class="tag">${ad.category}</span>`:''}
+          </div>
+          ${ad.price?`<div style="font-size:17px;font-weight:700;color:var(--orange)">${ad.price}</div>`:''}
+          <div style="font-size:12px;color:var(--text2);margin-top:2px">${ad.sellerName?`👤 ${ad.sellerName} `:''}${ad.city?`📍 ${ad.city} `:''}${ad.phone?`📞 ${ad.phone}`:''}</div>
+          ${ad.cImg?`<div style="margin-top:6px"><img src="${ad.cImg}" style="height:48px;border-radius:5px;border:1px solid #3B6D1144" title="Доказ за согласност"></div>`:''}
+          ${ad.cNote?`<div style="font-size:12px;color:var(--green);margin-top:4px">✓ ${ad.cNote}${ad.cDate?' · '+ad.cDate:''}</div>`:''}
+          <div class="row" style="margin-top:8px">
+            ${!ad.published?`<button class="btn green sm" onclick="pubAd(${ad.id})">✓ Објави на KupiProdadi</button>`:'<span style="color:var(--green);font-size:12px;font-weight:600">✓ Објавен</span>'}
+            <button class="btn sm" onclick="openModal(${ad.cId})">Уреди</button>
+            <button class="btn sm" onclick="exportAd(${ad.id})">📋 Копирај</button>
+            ${ad.link?`<a href="${ad.link}" target="_blank" class="btn sm">FB оглас</a>`:''}
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:6px"><span class="tag">${emp.name}</span> · ${(ad.images||[]).length} слики</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  updateBadge();
+}
+
+async function pubAd(id){ const ad=ads.find(x=>x.id===id); if(!ad)return; ad.published=true; await saveAds(); renderAds(); }
+
+function exportAd(id){
+  const ad=ads.find(x=>x.id===id); if(!ad)return;
+  const cons=ad.cImg?'[СКРИНШОТ ПРИКАЧЕН]':(ad.cNote||'НЕМА');
+  const txt=`=== ОГЛАС КУПИПРОДАДИ ===\nНАСЛОВ: ${ad.title}\nЦЕНА: ${ad.price}\nГРАД: ${ad.city}\nКАТЕГОРИЈА: ${ad.category}\n\nОПИС:\n${ad.desc}\n\nКОНТАКТ: ${ad.sellerName} / ${ad.phone}\nFB: ${ad.link}\n\nСЛИКИ:\n${(ad.images||[]).join('\n')}\n\nСОГЛАСНОСТ: ${cons} · ${ad.cDate||''}`;
+  navigator.clipboard.writeText(txt).catch(()=>{});
+  alert('✅ Огласот е копиран! Залепи го во KupiProdadi.');
+}
+
+// ===== DASHBOARD =====
+function renderDash(){
+  const tot=contacts.length, yes=contacts.filter(c=>c.status==='accepted').length;
+  const today=new Date().toDateString();
+  const pub=ads.filter(a=>a.published).length;
+  const cons=ads.filter(a=>a.cImg||a.cNote).length;
+  document.getElementById('s-tot').textContent=tot;
+  document.getElementById('s-yes').textContent=yes;
+  document.getElementById('s-cons').textContent=cons;
+  document.getElementById('s-pub').textContent=pub;
+  document.getElementById('empStats').innerHTML=S.employees.map((e,i)=>{
+    const ec=contacts.filter(c=>c.employee===i);
+    const ea=ec.filter(c=>c.status==='accepted');
+    const c=col(i);
+    return `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border2)">
+      <div class="avatar" style="width:30px;height:30px;font-size:11px;background:${c}20;color:${c}">${ini(e.name)}</div>
+      <div style="flex:1;font-size:14px;font-weight:500">${e.name}</div>
+      <div style="font-size:13px;color:var(--text2)">${ec.length} контакти</div>
+      <div style="font-size:13px;color:var(--green);font-weight:600">${ea.length} ДА</div>
+    </div>`;
+  }).join('');
+  const rec=[...contacts].slice(0,6);
+  const sl={new:'додаден',sent:'контактиран',accepted:'прифатил ДА'};
+  document.getElementById('recentAct').innerHTML=rec.length?rec.map(c=>{
+    const emp=S.employees[c.employee]||{name:'?'};
+    return `<div style="display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border2)">
+      <span class="badge ${c.status}">${sl[c.status]||c.status}</span>
+      <div style="flex:1;font-size:13px"><strong>${c.name}</strong> — ${c.product}</div>
+      <div style="font-size:12px;color:var(--text3)">${emp.name}</div>
+    </div>`;
+  }).join(''):'<div class="empty" style="padding:1rem">Нема активности уште.</div>';
+  updateBadge();
+}
+
+// ===== SETTINGS =====
+function renderSettings(){
+  document.getElementById('empList').innerHTML=S.employees.map((e,i)=>
+    `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border2)">
+      <div class="avatar" style="width:30px;height:30px;font-size:11px;background:${col(i)}20;color:${col(i)}">${ini(e.name)}</div>
+      <div style="flex:1;font-size:14px"><strong>${e.name}</strong> <span style="color:var(--text3);font-size:12px">${e.fb}</span></div>
+      <button class="btn sm danger" onclick="remEmp(${i})">Отстрани</button>
+    </div>`).join('');
+  document.getElementById('grpList').innerHTML=S.groups.map((g,i)=>
+    `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border2)">
+      <div style="flex:1;font-size:14px">${g}</div>
+      <button class="btn sm danger" onclick="remGrp(${i})">Отстрани</button>
+    </div>`).join('');
+  document.getElementById('tplList').innerHTML=S.templates.map((t,i)=>
+    `<div style="padding:10px 0;border-bottom:1px solid var(--border2)">
+      <div class="msg-box" style="margin-bottom:6px;font-size:12px">${t}</div>
+      <button class="btn sm danger" onclick="remTpl(${i})">Отстрани</button>
+    </div>`).join('');
+}
+async function addEmp(){ const n=document.getElementById('nEN').value.trim(),fb=document.getElementById('nEFB').value.trim(); if(!n)return; S.employees.push({name:n,fb:fb||n}); document.getElementById('nEN').value=''; document.getElementById('nEFB').value=''; await saveSet(); renderProfiles(); renderSettings(); }
+async function remEmp(i){ if(!confirm('Отстрани вработен?'))return; S.employees.splice(i,1); if(activeP>=S.employees.length)activeP=0; await saveSet(); renderProfiles(); renderSettings(); }
+async function addGrp(){ const g=document.getElementById('nGrp').value.trim(); if(!g)return; S.groups.push(g); document.getElementById('nGrp').value=''; await saveSet(); renderSettings(); }
+async function remGrp(i){ S.groups.splice(i,1); await saveSet(); renderSettings(); }
+async function addTpl(){ const t=document.getElementById('nTpl').value.trim(); if(!t)return; S.templates.push(t); document.getElementById('nTpl').value=''; await saveSet(); renderSettings(); }
+async function remTpl(i){ if(S.templates.length<=1){alert('Мора барем 1 шаблон!');return;} S.templates.splice(i,1); await saveSet(); renderSettings(); }
+
+// ===== INIT =====
+function renderAll(){ renderProfiles(); renderDash(); updateBadge(); }
+
+async function init(){
+  document.getElementById('todayDate').textContent=new Date().toLocaleDateString('mk-MK',{weekday:'long',day:'numeric',month:'long'});
+  await loadAll();
+  document.getElementById('loadWrap').style.display='none';
+  document.getElementById('ui').style.display='block';
+  renderAll();
+  setInterval(()=>loadAll().then(()=>renderAll()), 30000);
+}
+init();
+</script>
+</body>
+</html>
