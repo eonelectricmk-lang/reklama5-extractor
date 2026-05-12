@@ -1,0 +1,24 @@
+{
+  "name": "reklama5-extractor",
+  "version": "1.0.0",
+  "description": "Scraper za izvlekuvanje na oglasi od reklama5 i kontaktiranje na prodavaci za KupiProdadi",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "scrape": "node src/scraper.js",
+    "contact": "node src/contact.js"
+  },
+  "keywords": [
+    "scraper",
+    "reklama5",
+    "kupiprodadi",
+    "leads"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "cheerio": "^1.2.0",
+    "puppeteer": "^24.43.1"
+  }
+}
